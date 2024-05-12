@@ -2,7 +2,8 @@ A repository establishing a nextflow pipeline for applying MAST DEG analysis (Fi
 
 
 
-using pbmc small object in seurat package
+using pbmc_small object provided from seurat package (Butler et al., 2018)
+
 
 Running using slurm executor
 
@@ -10,5 +11,7 @@ Running using slurm executor
 
 
 Finak, G., McDavid, A., Yajima, M., Deng, J., Gersuk, V., Shalek, A. K., Slichter, C. K., Miller, H. W., McElrath, M. J., Prlic, M., Linsley, P. S., & Gottardo, R. (2015). MAST: A flexible statistical framework for assessing transcriptional changes and characterizing heterogeneity in single-cell RNA sequencing data. Genome Biology, 16(1), 278. https://doi.org/10.1186/s13059-015-0844-5
+
+Butler, A., Hoffman, P., Smibert, P., Papalexi, E., & Satija, R. (2018). Integrating single-cell transcriptomic data across different conditions, technologies, and species. Nature Biotechnology, 36(5), 411–420. https://doi.org/10.1038/nbt.4096
 
 
