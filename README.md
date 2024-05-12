@@ -1,6 +1,6 @@
 A repository establishing a nextflow pipeline for applying MAST DEG analysis (Finak et al., 2015)
 
-![image](https://github.com/mms100/scRNA-seq_nextflow_DEG_pipeline/assets/60142059/133882f2-52d5-4149-8a51-d49a64e74659)
+
 
 using pbmc small object in seurat package
 
