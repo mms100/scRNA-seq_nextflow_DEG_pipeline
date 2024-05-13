@@ -6,7 +6,7 @@ using pbmc_small object provided from seurat package (Butler et al., 2018)
 
 Running using slurm executor
 
-//path/to/nextflow_excutor run main.nf --object "/data/ag978683/Spleen/save/scrna_phase_comparing.Rds" --cond1 "IRF8KO" --cond2 "WT" --annotation "RNA_snn_res.0.1" --cond_colname "stage"
+//path/to/nextflow_excutor run main.nf --object "/path/to/seurat_object.rds" --cond1 "IRF8KO" --cond2 "WT" --annotation "RNA_snn_res.0.1" --cond_colname "stage"
 
 ###parameters list
 main.nf = the pipeline protocol
