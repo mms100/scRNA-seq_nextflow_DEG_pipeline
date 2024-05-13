@@ -22,7 +22,6 @@ tryCatch({
     library(SeuratObject)
     library(SeuratWrappers)
     library(optparse)  # For command-line argument parsing
-    source("//data/Schneider_lab/biopsy_MPN_CML/CML/data/cloned_pipeline/R/save_load_helper.R")
   })
 }, error = function(e) {
   # Handle the error (e.g., log or print an error message)
@@ -44,7 +43,7 @@ anno <- args[which(args == "--annotation") + 1]
 cond_colname <- args[which(args == "--cond_colname") + 1]
 
 # Import the Seurat object
-CML_object <- load_object(object)
+CML_object <- readRDS(object)
 print("object_imported")
 
 # Normalize and process Seurat object
