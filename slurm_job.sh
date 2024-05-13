@@ -17,5 +17,5 @@ module load scRNA/1.0.4  # Nextflow requires Java
 module load R/4.2.3  # If Nextflow is installed as a module
 
 # Run Nextflow
-//home/iu627335/nextflow run main.nf --object "/data/pbmc.Rds" --cond1 "g1" --cond2 "g2" --annotation "RNA_snn_res.1" --cond_colname "group"
+//path/to/nextflow_excutor run main.nf --object "/path/to/seurat_object.rds" --cond1 "IRF8KO" --cond2 "WT" --annotation "RNA_snn_res.0.1" --cond_colname "stage"
 
