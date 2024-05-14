@@ -56,14 +56,14 @@ for(i in 1:length(names_subcluster)){
 
 print("str_captured")
 
-filtered_list_CML_D90vsWT <- list()
+filtered_list_seurat_object_COND1vsCOND2 <- list()
 
 #import the CSV files
-filtered_list_CML_D90vsWT <- lapply(csv_files, read.csv)
+filtered_list_seurat_object_COND1vsCOND2 <- lapply(csv_files, read.csv)
 
 
 for(i in 1:length(names_subcluster_3)){
-  names(filtered_list_CML_D90vsWT)[[i]] <- names_subcluster_3[[i]]
+  names(filtered_list_seurat_object_COND1vsCOND2)[[i]] <- names_subcluster_3[[i]]
 }
 
 
@@ -71,7 +71,7 @@ for(i in 1:length(names_subcluster_3)){
 #start to prepare the plot
 
 
-mlist <- filtered_list_CML_D90vsWT
+mlist <- filtered_list_seurat_object_COND1vsCOND2
 tlist <- list()
 plist <- list()
 
@@ -85,7 +85,7 @@ for(i in 1:length(mlist)){
   bottom_entries <- tail(mlist[[i]], n = bottom_n)# Select the bottom entries
   tlist[[i]] <- rbind(head(mlist[[i]],n = 20),tail(mlist[[i]],n = 20))
   color_vector <- c(rep("red2", top_n), rep("slateblue4", bottom_n))
-
+  
 }
 
 names(tlist) <- names(mlist)
@@ -100,8 +100,8 @@ plist <- list()
 # Create the bar plot with the appropriate color vector
 
 for(i in 1:length(tlist)){
-    pdf(file = paste0("barplot_top_20", cond1 ,"vs", cond2, "_", paste0(names(tlist)[[i]]), ".pdf"))
-    barplot(
+  pdf(file = paste0("barplot_top_20", cond1 ,"vs", cond2, "_", paste0(names(tlist)[[i]]), ".pdf"))
+  barplot(
     tlist[[i]]$t_stat,
     names.arg = tlist[[i]][, 2],
     horiz = TRUE,
@@ -113,8 +113,8 @@ for(i in 1:length(tlist)){
     xlim = c(max(tlist[[i]]$t_stat), min(tlist[[i]]$t_stat )),
     cex.names = 0.5  # Replace lower_limit and upper_limit with your desired limits
   )
-      dev.off()
-
+  dev.off()
+  
 }
 
 
