@@ -1,9 +1,8 @@
 #!/bin/bash
 #SBATCH --job-name=nextflow_pbmc     # Job name
 #SBATCH --mail-type=END,FAIL         # Mail events (NONE, BEGIN, END, FAIL, ALL)
-#SBATCH --output=logs/output.%J.%x.txt
-#SBATCH --error=logs/error.%J.%x.txt
-#SBATCH --mail-user=mmsaad100@gmail.com    # Where to send mail	
+#SBATCH --output=Path/to/logs/output.%J.%x.txt
+#SBATCH --error=Path/to/logs/error.%J.%x.txt
 ### Time to execute
 #SBATCH --time=96:00:00
 
