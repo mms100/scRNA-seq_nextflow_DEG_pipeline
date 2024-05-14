@@ -43,19 +43,19 @@ anno <- args[which(args == "--annotation") + 1]
 cond_colname <- args[which(args == "--cond_colname") + 1]
 
 # Import the Seurat object
-CML_object <- readRDS(object)
+seurat_object <- readRDS(object)
 print("object_imported")
 
 # Normalize and process Seurat object
-counts <- CML_object@assays$RNA@counts
-meta_data <- CML_object@meta.data
+counts <- seurat_object@assays$RNA@counts
+meta_data <- seurat_object@meta.data
 
-CML_object <- CreateSeuratObject(counts = counts, meta.data = meta_data)
-CML_object <- NormalizeData(CML_object, normalization.method = "LogNormalize", scale.factor = 10000)
+seurat_object <- CreateSeuratObject(counts = counts, meta.data = meta_data)
+seurat_object <- NormalizeData(seurat_object, normalization.method = "LogNormalize", scale.factor = 10000)
 
-#change column name of the condations from whatever it is called  to stage
-column_index <- which(colnames(CML_object@meta.data) == cond_colname)
-colnames(CML_object@meta.data)[column_index] <- "stage"
+# Change column name of the conditions from whatever it is called to "stage"
+column_index <- which(colnames(seurat_object@meta.data) == cond_colname)
+colnames(seurat_object@meta.data)[column_index] <- "stage"
 
 print("object_Normalized")
 
@@ -63,29 +63,25 @@ print("object_Normalized")
 include_conditions <- c(cond1, cond2)
 
 # Subset to include only rows with the desired conditions
-CML_object_D0WT <- subset(CML_object, stage %in% include_conditions)
+seurat_object_COND_1COND_2 <- subset(seurat_object, stage %in% include_conditions)
 
 # Drop unused levels
-CML_object_D0WT$stage <- factor(CML_object_D0WT$stage) #remeber to remove this in real data
-CML_object_D0WT$stage <- droplevels(CML_object_D0WT$stage)
+seurat_object_COND_1COND_2$stage <- factor(seurat_object_COND_1COND_2$stage) # Remember to remove this in real data
+seurat_object_COND_1COND_2$stage <- droplevels(seurat_object_COND_1COND_2$stage)
 print("object_Subseted")
 
 # Split into sub-objects
-list_of_subpops_D0vsWT <- SplitObject(CML_object_D0WT, split.by = anno)
+list_of_subpops_COND_1vsCOND_2 <- SplitObject(seurat_object_COND_1COND_2, split.by = anno)
 print("object_Splitted")
 
 # Convert Seurat objects to SingleCellExperiment
-for (i in 1:length(list_of_subpops_D0vsWT)) {
-  list_of_subpops_D0vsWT[[i]] <- as.SingleCellExperiment(list_of_subpops_D0vsWT[[i]])
+for (i in 1:length(list_of_subpops_COND_1vsCOND_2)) {
+  list_of_subpops_COND_1vsCOND_2[[i]] <- as.SingleCellExperiment(list_of_subpops_COND_1vsCOND_2[[i]])
 }
 print("object_Singlecellexperimet_converted")
 
-
-
-
-
-#first function
-find_de_MAST_D0vsWT <- function(adata_){
+# Function to find differential expression using MAST
+find_de_MAST_COND_1vsCOND_2 <- function(adata_){
   # create a MAST object
   sca <- SceToSingleCellAssay(adata_, class = "SingleCellAssay")
   print("Dimensions before subsetting:")
@@ -126,25 +122,20 @@ find_de_MAST_D0vsWT <- function(adata_){
   return(result)
 }
 
+list_of_results_COND_1vsCOND_2 <- list()
 
-list_of_restlts_D0vsWT <- list()
-
-
-
-#first comparison
-
-for(i in 1:length(list_of_subpops_D0vsWT)){
+# First comparison
+for(i in 1:length(list_of_subpops_COND_1vsCOND_2)){
   tryCatch({
-    print(paste0("calculating_MAST_D0vsWT_for_", names(list_of_subpops_D0vsWT)[[i]]))
-    list_of_restlts_D0vsWT[[i]] <-find_de_MAST_D0vsWT(list_of_subpops_D0vsWT[[i]])
-    names(list_of_restlts_D0vsWT)[[i]] <- names(list_of_subpops_D0vsWT)[[i]]
-    colnames(list_of_restlts_D0vsWT[[i]]) <- c("GeneID", "pval", "lfc", "FDR")
-    list_of_restlts_D0vsWT[[i]]  <- list_of_restlts_D0vsWT[[i]]  %>%
+    print(paste0("calculating_MAST_COND_1vsCOND_2_for_", names(list_of_subpops_COND_1vsCOND_2)[[i]]))
+    list_of_results_COND_1vsCOND_2[[i]] <- find_de_MAST_COND_1vsCOND_2(list_of_subpops_COND_1vsCOND_2[[i]])
+    names(list_of_results_COND_1vsCOND_2)[[i]] <- names(list_of_subpops_COND_1vsCOND_2)[[i]]
+    colnames(list_of_results_COND_1vsCOND_2[[i]]) <- c("GeneID", "pval", "lfc", "FDR")
+    list_of_results_COND_1vsCOND_2[[i]]  <- list_of_results_COND_1vsCOND_2[[i]]  %>%
       mutate(t_stat = (-log10(pval) * sign(lfc)))
-    write.csv(list_of_restlts_D0vsWT[[i]], file = paste0( cond1 ,"vs", cond2, "_", names(list_of_restlts_D0vsWT)[[i]], ".csv"))
+    write.csv(list_of_results_COND_1vsCOND_2[[i]], file = paste0( cond1 ,"vs", cond2, "_", names(list_of_results_COND_1vsCOND_2)[[i]], ".csv"))
   }, error = function(e){
     # Handle the error (e.g., print an error message)
     cat("Error in iteration", i, ":", conditionMessage(e), "\n")
   })
 }
-
