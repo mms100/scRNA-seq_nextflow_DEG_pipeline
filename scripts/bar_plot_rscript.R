@@ -35,7 +35,7 @@ outdir <- args[which(args == "--outdir_2") + 1] # Get the value after '--var2'
 
 
 #in my PC
-filtered_list_CML_D0vsWT <- list()
+filtered_list_seurat_object_COND1vsCOND2 <- list()
 
 
 
@@ -65,45 +65,45 @@ for(i in 1:length(names_subcluster)){
 print("str_captured")
 
 #import the CSV files
-filtered_list_CML_D0vsWT <- lapply(csv_files, read.csv)
+filtered_list_seurat_object_COND1vsCOND2 <- lapply(csv_files, read.csv)
 
 
 for(i in 1:length(names_subcluster_3)){
-  names(filtered_list_CML_D0vsWT)[[i]] <- names_subcluster_3[[i]]
+  names(filtered_list_seurat_object_COND1vsCOND2)[[i]] <- names_subcluster_3[[i]]
 }
 
 #filter to include only significant DEG
 
 for(i in 1:length(names_subcluster_3)){
-  names(filtered_list_CML_D0vsWT)[[i]] <- names_subcluster_3[[i]]
-  filtered_list_CML_D0vsWT[[i]] <- filtered_list_CML_D0vsWT[[i]] %>% filter(FDR <= 0.05) %>% filter(lfc <= -0.25 | lfc >= 0.25)
+  names(filtered_list_seurat_object_COND1vsCOND2)[[i]] <- names_subcluster_3[[i]]
+  filtered_list_seurat_object_COND1vsCOND2[[i]] <- filtered_list_seurat_object_COND1vsCOND2[[i]] %>% filter(FDR <= 0.05) %>% filter(lfc <= -0.25 | lfc >= 0.25)
 }
 
-filtered_list_CML_D0vsWT <- Filter(function(df) nrow(df) > 0, filtered_list_CML_D0vsWT)
+filtered_list_seurat_object_COND1vsCOND2 <- Filter(function(df) nrow(df) > 0, filtered_list_seurat_object_COND1vsCOND2)
 
 
 
-comparisons <- c("Data_CML_D0vsWT")
+comparisons <- c("Data_seurat_object_COND1vsCOND2")
 list_of_comparisons <- list()
 
 
 for(i in 1){
-  list_of_comparisons[[1]]<- data.frame(matrix(nrow = 2, ncol = length(filtered_list_CML_D0vsWT)))
+  list_of_comparisons[[1]]<- data.frame(matrix(nrow = 2, ncol = length(filtered_list_seurat_object_COND1vsCOND2)))
   names(list_of_comparisons)[[i]] <- comparisons[i]
 }
 
-colnames(list_of_comparisons[[1]]) <- names(filtered_list_CML_D0vsWT)
+colnames(list_of_comparisons[[1]]) <- names(filtered_list_seurat_object_COND1vsCOND2)
 
 
 
-data_1<- data.frame(matrix(nrow = 2, ncol = length(filtered_list_CML_D0vsWT)))
+data_1<- data.frame(matrix(nrow = 2, ncol = length(filtered_list_seurat_object_COND1vsCOND2)))
 
 
-for(i in 1:length(filtered_list_CML_D0vsWT)) {
+for(i in 1:length(filtered_list_seurat_object_COND1vsCOND2)) {
   #first comparison
-  list_of_comparisons[[1]] <- as.data.frame(table(sign(filtered_list_CML_D0vsWT[[i]]$lfc)))
+  list_of_comparisons[[1]] <- as.data.frame(table(sign(filtered_list_seurat_object_COND1vsCOND2[[i]]$lfc)))
   data_1[,i] <- list_of_comparisons[[1]]$Freq
-  colnames(data_1) <- names(filtered_list_CML_D0vsWT)
+  colnames(data_1) <- names(filtered_list_seurat_object_COND1vsCOND2)
   
 }
 
