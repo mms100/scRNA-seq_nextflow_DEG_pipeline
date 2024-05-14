@@ -59,14 +59,14 @@ for(i in 1:length(names_subcluster)){
 
 print("str_captured")
 
-filtered_list_CML_D90vsWT <- list()
+filtered_list_seurat_object_COND1vsCOND2 <- list()
 
 #import the CSV files
-filtered_list_CML_D90vsWT <- lapply(csv_files, read.csv)
+filtered_list_seurat_object_COND1vsCOND2 <- lapply(csv_files, read.csv)
 
 
 for(i in 1:length(names_subcluster_3)){
-  names(filtered_list_CML_D90vsWT)[[i]] <- names_subcluster_3[[i]]
+  names(filtered_list_seurat_object_COND1vsCOND2)[[i]] <- names_subcluster_3[[i]]
 }
 
 #include the top 20 lfc genes in each cell type
@@ -77,21 +77,21 @@ tlist_up <- list()
 tlist_down <- list()
 mlist <- list()
 
-for(i in 1:length(filtered_list_CML_D90vsWT)){
-  tlist[[i]] <- filtered_list_CML_D90vsWT[[i]] 
+for(i in 1:length(filtered_list_seurat_object_COND1vsCOND2)){
+  tlist[[i]] <- filtered_list_seurat_object_COND1vsCOND2[[i]] 
   tlist[[i]] <- tlist[[i]][order(tlist[[i]]$lfc,decreasing = T),]
   tlist_up[[i]] <- tlist[[i]] %>% filter(FDR <= 0.05 ) %>% filter(lfc >= 0.25 )
   tlist_down[[i]] <- tlist[[i]] %>% filter(FDR <= 0.05 ) %>% filter(lfc <=-0.25)
   mlist[[i]] <- rbind(head(tlist_up[[i]],n = 20),tail(tlist_down[[i]],n = 20))
-  names(tlist)[[i]] <- names(filtered_list_CML_D90vsWT)[[i]]
-  names(mlist)[[i]] <- names(filtered_list_CML_D90vsWT)[[i]]
+  names(tlist)[[i]] <- names(filtered_list_seurat_object_COND1vsCOND2)[[i]]
+  names(mlist)[[i]] <- names(filtered_list_seurat_object_COND1vsCOND2)[[i]]
 }
 
 #plot volcano plot
 plist <- list()
 
-for(i in 1:length(filtered_list_CML_D90vsWT)){
-  list_of_comparisons <- as.data.frame(table(sign(filtered_list_CML_D90vsWT[[i]]$lfc)))
+for(i in 1:length(filtered_list_seurat_object_COND1vsCOND2)){
+  list_of_comparisons <- as.data.frame(table(sign(filtered_list_seurat_object_COND1vsCOND2[[i]]$lfc)))
   plist[[i]] <- EnhancedVolcano(tlist[[i]],
                                 lab = tlist[[i]]$GeneID,
                                 selectLab = mlist[[i]]$GeneID,
@@ -103,7 +103,7 @@ for(i in 1:length(filtered_list_CML_D90vsWT)){
                                 pCutoff = 0.05,
                                 y = 'FDR',
                                 pointSize = 1,
-				FCcutoff = 0.25,
+                                FCcutoff = 0.25,
                                 labSize = 3,
                                 ylab = bquote(~-Log[10] ~ italic(FDR)),
                                 title = paste0(names(tlist)[[i]]),
@@ -116,15 +116,15 @@ for(i in 1:length(filtered_list_CML_D90vsWT)){
 
 
 
-for(i in 1: length(filtered_list_CML_D90vsWT)){
-	tryCatch({
-	       	pdf(file = paste0("volcano",  cond1 ,"vs", cond2, "_", paste0(names(tlist)[[i]]), ".pdf"))
-		print(plist[[i]])
-		dev.off()
-	}, error = function(e){
+for(i in 1: length(filtered_list_seurat_object_COND1vsCOND2)){
+  tryCatch({
+    pdf(file = paste0("volcano",  cond1 ,"vs", cond2, "_", paste0(names(tlist)[[i]]), ".pdf"))
+    print(plist[[i]])
+    dev.off()
+  }, error = function(e){
     # Handle the error (e.g., print an error message)
-		cat("Error in iteration", i, ":", conditionMessage(e), "\n")
-	})
+    cat("Error in iteration", i, ":", conditionMessage(e), "\n")
+  })
 }
-                
+
 
