@@ -70,51 +70,51 @@ for(i in 1:length(names_subcluster_3)){
 #start to prepare the plot
 
 
+
 mlist <- filtered_list_seurat_object_COND1vsCOND2
 tlist <- list()
 plist <- list()
 
 
 for(i in 1:length(mlist)){
+  
   mlist[[i]] <- mlist[[i]][!is.infinite(mlist[[i]]$t_stat), ]
   mlist[[i]] <- mlist[[i]][order(mlist[[i]]$t_stat,decreasing = T),]
-  top_n <- min(20, nrow(mlist[[i]]))  # Ensure it doesn't exceed the number of rows
-  bottom_n <- min(20, nrow(mlist[[i]])) 
-  top_entries <- head(mlist[[i]], n = top_n)# Select the top 
-  bottom_entries <- tail(mlist[[i]], n = bottom_n)# Select the bottom entries
   tlist[[i]] <- rbind(head(mlist[[i]],n = 20),tail(mlist[[i]],n = 20))
-  color_vector <- c(rep("red2", top_n), rep("slateblue4", bottom_n))
-  tlist[[i]][, 2] <- factor(tlist[[i]][, 2], levels = rev(tlist[[i]][, 2]))
-
-}
-
-names(tlist) <- names(mlist)
-
-
-
-plist <- list()
-# Set up color vectors based on the number of entries
-
-
-
-# Create the bar plot with the appropriate color vector
-
-for(i in 1:length(tlist)){
-  pdf(file = paste0("barplot_top_20", cond1 ,"vs", cond2, "_", paste0(names(tlist)[[i]]), ".pdf"))
-  barplot(
-    tlist[[i]]$t_stat,
-    names.arg = tlist[[i]][, 2],
-    horiz = TRUE,
-    las = 2,
-    col = color_vector,
-    border = NA,
-    main = names(tlist)[i],
-    xlab = "t_stat",
-    xlim = c(max(tlist[[i]]$t_stat), min(tlist[[i]]$t_stat )),
-    cex.names = 0.5  # Replace lower_limit and upper_limit with your desired limits
-  )
-  dev.off()
   
 }
+names(tlist) <- names(mlist)
+#loop to generate list of tables for plotting
+symmetric_limits <- function (x) 
+{
+  max <- max(abs(x))
+  c(-max, max)
+}
 
+for(i in 1:length(mlist)){
+  
+  bar.1 <- rbind(
+    top_n(x = mlist[[i]], n = 10, wt = t_stat),
+    top_n(x = mlist[[i]], n = -10, wt = t_stat)
+  )
+  bar.1$DEG <- c(rep("UP", 10), rep("DOWN", 10))
+  
+  # Reverse factor levels so positive values are on top
+  bar.1$GeneID <- factor(bar.1$GeneID, levels = rev(bar.1$GeneID))
+  
+  plist[[i]] <- ggplot(bar.1, aes(x = t_stat, y = GeneID, fill = DEG)) +
+    geom_bar(stat = "identity") +
+    theme_classic() +
+    scale_fill_manual(values = c("slateblue4", "red2")) +
+    scale_x_continuous(limits = symmetric_limits) +
+    theme(legend.position = "bottom", aspect.ratio = 3) +
+    ggtitle(names(mlist)[[i]]) +
+    geom_vline(xintercept = 0, linetype = "dashed")
+}
+pdf(file = paste0("barplot_top_20", cond1 ,"vs", cond2, "_", paste0(names(tlist)[[i]]), ".pdf"))
+for (i in 1:length(plist)) {
+  print(plist[[i]])
+  
+}
+dev.off()
 
