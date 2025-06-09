@@ -4,7 +4,7 @@ A repository establishing a nextflow pipeline for applying MAST DEG analysis (Fi
 
 # Parameters list
 
-//path/to/nextflow_excutor run path/to/main.nf  --object "/path/to/seurat_object.rds" --cond1 "g1" --cond2 "g2" --annotation "RNA_snn_res.0.8" --cond_colname "groups"  --batch_colname "letter.idents" --output_1 "Pbmc_batch"
+//path/to/nextflow_excutor run path/to/main.nf  --object "/path/to/seurat_object.rds" --cond1 "g1" --cond2 "g2" --annotation "RNA_snn_res.0.8" --cond_colname "stage"  --batch_colname "library_name" --output_1 "batch_on"
 
 **#parameters list**
 
