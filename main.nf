@@ -1,9 +1,7 @@
 // Enable DSL2 syntax
 nextflow.enable.dsl = 2
 
-
 // Define base directory and subdirectories
-
 def outdir = "${PWD}/MAST_${params.cond1}vs${params.cond2}_${params.output_1}"
 def tables = "${outdir}/tables"
 def plots = "${outdir}/plots"
@@ -12,133 +10,113 @@ def top_gens = "${outdir}/plots/top_gens"
 
 // Process to ensure all directories exist
 process createDirectories {
-    executor = 'local'  // Can run on a local executor since it's a simple task
-    clusterOptions = '--ntasks=1 --mem=1Gb --time=00:05:00'  // Minimal resources
+    executor = 'local'
+    clusterOptions = '--ntasks=1 --mem=1Gb --time=00:05:00'
+
+    output:
+    path "dummy1.txt"
 
     script:
     """
-    # Create directories with the recursive option
     mkdir -p "${outdir}"
     mkdir -p "${tables}"
     mkdir -p "${plots}"
     mkdir -p "${volcano}"
     mkdir -p "${top_gens}"
-
+    touch dummy1.txt
     """
 }
 
 // Define a process that runs an R script
 process runRscript {
     executor = 'slurm'
-
     clusterOptions = '--ntasks=1  --mem=45Gb --time=24:00:00'
+    def rscript_path = "${PWD}/scripts/MAST_rcript_1.R"
 
-    def rscript_path = "${PWD}/scripts/MAST_rcript.R"  // Correct path to the R script
+    input:
+    path dummy1
 
-    // Define the publish directory
+    output:
+    path "dummy2.txt"
+    file("*.csv")
+
     publishDir "${outdir}/tables", mode: 'copy'
 
-    // Define input
-    input:
-    val params.object  // Ensure this is correct (single value input)
-
-    // Define output
-    output:
-
-    file("*.csv")  // Specify the expected output
-
-    // The script block for execution
     script:
     """
-    Rscript ${rscript_path} --object "${params.object}" --cond1 ${params.cond1} --cond2 ${params.cond2} --cond_colname ${params.cond_colname} --batch_colname ${params.batch_colname}  --annotation ${params.annotation}  --outdir "${tables}"    
+    Rscript ${rscript_path} --object "${params.object}" --cond1 ${params.cond1} --cond2 ${params.cond2} --cond_colname ${params.cond_colname} --batch_colname ${params.batch_colname} --annotation ${params.annotation} --outdir "${tables}"
+    touch dummy2.txt
     """
 }
 
+process processvolcano {
+    executor = 'slurm'
+    clusterOptions = '--ntasks=1 --mem=10Gb --time=02:00:00'
+    def rscript_3_path = "${PWD}/scripts/volcano_plot_rscript.R"
 
-// New process that will use the CSV files from the previous process
+    input:
+    path dummy2
+    file("*.csv")
+
+    output:
+    path "dummy3.txt"
+    file("*.pdf")
+
+    publishDir volcano, mode: 'copy', overwrite: true, pattern: "*.pdf"
+
+    script:
+    """
+    Rscript ${rscript_3_path} --input_dir_1 "${tables}" --outdir_3 "${volcano}" --cond1 ${params.cond1} --cond2 ${params.cond2}
+    touch dummy3.txt
+    """
+}
+
+process processtop_20 {
+    executor = 'slurm'
+    clusterOptions = '--ntasks=1 --mem=10Gb --time=02:00:00'
+    def rscript_4_path = "${PWD}/scripts/barplot_top_20.R"
+
+    input:
+    path dummy3
+    file("*.csv")
+
+    output:
+    path "dummy4.txt"
+    file("*.pdf")
+
+    publishDir top_gens, mode: 'copy', overwrite: true, pattern: "*.pdf"
+
+    script:
+    """
+    Rscript ${rscript_4_path} --input_dir_1 "${tables}" --cond1 ${params.cond1} --cond2 ${params.cond2}
+    touch dummy4.txt
+    """
+}
+
 process processCSVFiles {
     executor = 'slurm'
     clusterOptions = '--ntasks=1 --mem=10Gb --time=02:00:00'
-
-    def rscript_2_path = "${PWD}/scripts/bar_plot_rscript.R"  // Correct path to the R script
-   
-    publishDir plots, mode: 'copy', overwrite: true, pattern: "barplot.pdf"
+    def rscript_2_path = "${PWD}/scripts/bar_plot_rscript.R"
 
     input:
-    file("*.csv")   // Receiving the CSV files
+    path dummy4
+    file("*.csv")
 
     output:
-    file("barplot.pdf")  // Resulting file after processing
+    file("barplot.pdf")
+
+    publishDir plots, mode: 'copy', overwrite: true, pattern: "barplot.pdf"
 
     script:
     """
     Rscript ${rscript_2_path} --input_dir_1 "${tables}" --outdir "${tables}"
-
     """
 }
-
-// Another process that will use the CSV files from the previous process
-process processvolcano {
-    executor = 'slurm'
-    clusterOptions = '--ntasks=1 --mem=10Gb --time=02:00:00'
-
-    def rscript_3_path = "${PWD}/scripts/volcano_plot_rscript.R"  // Correct path to the R script
-   
-    publishDir volcano, mode: 'copy', overwrite: true, pattern: "*.pdf"
-
-    input:
-    file("*.csv")   // Receiving the CSV files
-
-    output:
-    file("*.pdf")  // Resulting file after processing
-
-    script:
-    """
-    Rscript ${rscript_3_path} --input_dir_1 "${tables}" --outdir_3 "${volcano}"  --cond1 ${params.cond1} --cond2 ${params.cond2}
-
-    """
-}
-
-// Another process that will use the CSV files from the previous process
-process processtop_20 {
-    executor = 'slurm'
-    clusterOptions = '--ntasks=1 --mem=10Gb --time=02:00:00'
-
-    def rscript_4_path = "${PWD}/scripts/barplot_top_20.R"  // Correct path to the R script
-   
-    
-    publishDir top_gens, mode: 'copy', overwrite: true, pattern: "*.pdf"
-
-    input:
-    file("*.csv")   // Receiving the CSV files
-
-    output:
-    file("*.pdf")  // Resulting file after processing
-
-    script:
-    """
-    Rscript ${rscript_4_path} --input_dir_1 "${tables}"   --cond1 ${params.cond1} --cond2 ${params.cond2}
-
-    """
-}
-
-
 
 workflow {
-    // Step 1: Create required directories
-    createDirectories()
-
-    // Step 2: Run R script and create a channel for CSV files
-    runRscript(params.object)
-
-
-    // Step 3: Process the CSV files for volcano plot
-    processvolcano(runRscript.out)
-
-    // Step 4: Process to plot top 20 data
-    processtop_20(runRscript.out)
-
-    // Step 5: Process to plot barplot of higly disregualted clusters
-    processCSVFiles(runRscript.out)
-    
+    ch1 = createDirectories()
+    ch2 = runRscript(ch1.out)
+    ch3 = processvolcano(ch2.out, runRscript.out)
+    ch4 = processtop_20(ch3.out, runRscript.out)
+    processCSVFiles(ch4.out, runRscript.out)
 }
