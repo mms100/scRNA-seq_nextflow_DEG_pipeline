@@ -30,7 +30,7 @@ main.nf = the pipeline protocol
 
 sbatch slurm_job.sh 
 
-# prerequisite packages to be installed in R studio
+# prerequisite packages to be installed in R 
 ## Reproducing the R Environment
 
 This project uses [renv](https://rstudio.github.io/renv/) for reproducible R environments.
