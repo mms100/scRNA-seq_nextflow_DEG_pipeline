@@ -1,8 +1,6 @@
-# Differential gene expresssion nextflow pipeline
-A repository establishing a nextflow pipeline for applying MAST DEG analysis (Finak et al., 2015)
+# Differential gene expresssion nextflow pipeline for seurat V4
+A repository establishing a nextflow pipeline for applying MAST DEG analysis (Finak et al., 2015) 
 
-
-using pbmc_small object provided from seurat package (Butler et al., 2018)
 
 # Parameters list
 
