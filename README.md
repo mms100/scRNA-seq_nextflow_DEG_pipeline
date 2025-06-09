@@ -30,7 +30,10 @@ main.nf = the pipeline protocol
 
 sbatch slurm_job.sh 
 
-# prerequisite packages to be installed in R 
+# prerequisite 
+
+**nextflow version** 24.04.2.5914
+
 ## Reproducing the R Environment
 
 This project uses [renv](https://rstudio.github.io/renv/) for reproducible R environments.
