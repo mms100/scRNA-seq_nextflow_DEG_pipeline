@@ -1,14 +1,15 @@
+# Differential gene expresssion nextflow pipeline
 A repository establishing a nextflow pipeline for applying MAST DEG analysis (Finak et al., 2015)
 
 
 using pbmc_small object provided from seurat package (Butler et al., 2018)
 
+# Parameters list
 
-Running using slurm executor
+//path/to/nextflow_excutor run path/to/main.nf  --object "/path/to/seurat_object.rds" --cond1 "g1" --cond2 "g2" --annotation "RNA_snn_res.0.8" --cond_colname "groups"  --batch_colname "letter.idents" --output_1 "Pbmc_batch"
 
-//path/to/nextflow_excutor run main.nf --object "/path/to/seurat_object.rds" --cond1 "IRF8KO" --cond2 "WT" --annotation "RNA_snn_res.0.1" --cond_colname "stage"
+**#parameters list**
 
-###parameters list
 main.nf = the pipeline protocol
 
 --object = path for the seurat object
@@ -20,7 +21,16 @@ main.nf = the pipeline protocol
 --annotation = the celltype column in the seurat metadat
 
 --cond_colname = the column that contains conditions 
+
+--batch_colname = the column that contains batch info.
+
+--output_1 = name of the output repository 
+
+# Running using slurm executor
+
 ####
+
+
 
 <img width="467" alt="image" src="https://github.com/user-attachments/assets/5d250dc7-2849-4340-a1fe-f0325891685b" />
 

@@ -22,6 +22,7 @@ tryCatch({
     library(SeuratObject)
     library(SeuratWrappers)
     library(optparse)  # For command-line argument parsing
+    source("//data/Schneider_lab/biopsy_MPN_CML/CML/data/cloned_pipeline/R/save_load_helper.R")
   })
 }, error = function(e) {
   # Handle the error (e.g., log or print an error message)
@@ -41,21 +42,38 @@ cond1 <- args[which(args == "--cond1") + 1]
 cond2 <- args[which(args == "--cond2") + 1] 
 anno <- args[which(args == "--annotation") + 1]
 cond_colname <- args[which(args == "--cond_colname") + 1]
-
+batch_colname <- args[which(args == "--batch_colname") + 1]
+if (is.null(batch_colname) || batch_colname == "" || batch_colname == "NULL") {
+  use_batch <- FALSE
+} else {
+  use_batch <- TRUE
+}
 # Import the Seurat object
-seurat_object <- readRDS(object)
+#Seurat_object <- readRDS(object)
+
+Seurat_object <- load_object(object)
 print("object_imported")
 
 # Normalize and process Seurat object
-counts <- seurat_object@assays$RNA@counts
-meta_data <- seurat_object@meta.data
+counts <- Seurat_object@assays$RNA@counts
+meta_data <- Seurat_object@meta.data
 
-seurat_object <- CreateSeuratObject(counts = counts, meta.data = meta_data)
-seurat_object <- NormalizeData(seurat_object, normalization.method = "LogNormalize", scale.factor = 10000)
+Seurat_object <- CreateSeuratObject(counts = counts, meta.data = meta_data)
+Seurat_object <- NormalizeData(Seurat_object, normalization.method = "LogNormalize", scale.factor = 10000)
 
-# Change column name of the conditions from whatever it is called to "stage"
-column_index <- which(colnames(seurat_object@meta.data) == cond_colname)
-colnames(seurat_object@meta.data)[column_index] <- "stage"
+#change column name of the condations from whatever it is called  to stage
+column_index <- which(colnames(Seurat_object@meta.data) == cond_colname)
+colnames(Seurat_object@meta.data)[column_index] <- "stage"
+
+#change column name of the batch from whatever it is called  to "name"
+if (use_batch && batch_colname %in% colnames(Seurat_object@meta.data)) {
+  column_index <- which(colnames(Seurat_object@meta.data) == batch_colname)
+  colnames(Seurat_object@meta.data)[column_index] <- "name"
+}
+#change column name of the cell_type from whatever it is called  to "annotation"
+column_index <- which(colnames(Seurat_object@meta.data) == anno)
+colnames(Seurat_object@meta.data)[column_index] <- "annotation"
+
 
 print("object_Normalized")
 
@@ -63,79 +81,91 @@ print("object_Normalized")
 include_conditions <- c(cond1, cond2)
 
 # Subset to include only rows with the desired conditions
-seurat_object_COND_1COND_2 <- subset(seurat_object, stage %in% include_conditions)
+Seurat_object_D0WT <- subset(Seurat_object, stage %in% include_conditions)
+
+#remove cells that has no cells in one of the conditions
+table_cells <- as.data.frame.matrix(table(Seurat_object_D0WT$annotation, Seurat_object_D0WT$stage))
+df_no_zeros <- table_cells[apply(table_cells, 1, function(row) all(row > 1)), ]
+no_zero_cells <- rownames(df_no_zeros)
+Seurat_object_D0WT <- SetIdent(Seurat_object_D0WT, value = "annotation")
+Seurat_object_D0WT <- subset(Seurat_object_D0WT, idents = no_zero_cells)
+print("object_cleaned_from_zero_cells")
 
 # Drop unused levels
-seurat_object_COND_1COND_2$stage <- factor(seurat_object_COND_1COND_2$stage) # Remember to remove this in real data
-seurat_object_COND_1COND_2$stage <- droplevels(seurat_object_COND_1COND_2$stage)
+Seurat_object_D0WT$stage <- factor(Seurat_object_D0WT$stage) #remeber to remove this in real data
+Seurat_object_D0WT$stage <- droplevels(Seurat_object_D0WT$stage)
 print("object_Subseted")
 
 # Split into sub-objects
-list_of_subpops_COND_1vsCOND_2 <- SplitObject(seurat_object_COND_1COND_2, split.by = anno)
+list_of_subpops_D0vsWT <- SplitObject(Seurat_object_D0WT, split.by = "annotation")
 print("object_Splitted")
 
 # Convert Seurat objects to SingleCellExperiment
-for (i in 1:length(list_of_subpops_COND_1vsCOND_2)) {
-  list_of_subpops_COND_1vsCOND_2[[i]] <- as.SingleCellExperiment(list_of_subpops_COND_1vsCOND_2[[i]])
+for (i in 1:length(list_of_subpops_D0vsWT)) {
+  list_of_subpops_D0vsWT[[i]] <- as.SingleCellExperiment(list_of_subpops_D0vsWT[[i]])
 }
 print("object_Singlecellexperimet_converted")
 
-# Function to find differential expression using MAST
-find_de_MAST_COND_1vsCOND_2 <- function(adata_){
-  # create a MAST object
+
+
+
+
+#first function
+find_de_MAST_D0vsWT <- function(adata_) {
   sca <- SceToSingleCellAssay(adata_, class = "SingleCellAssay")
-  print("Dimensions before subsetting:")
-  print(dim(sca))
-  print("")
-  # keep genes that are expressed in more than 10% of all cells
-  #sca <- sca[freq(sca)>0.1,]
-  print("Dimensions after subsetting:")
-  print(dim(sca))
-  print("")
-  # add a column to the data which contains scaled number of genes that are expressed in each cell
-  cdr2 <- colSums(assay(sca)>0)
+  sca <- sca[freq(sca) > 0.1, ]
+  cdr2 <- colSums(assay(sca) > 0)
   colData(sca)$ngeneson <- scale(cdr2)
-  # store the columns that we are interested in as factors
   label <- factor(colData(sca)$stage)
-  # set the reference level
   label <- relevel(label, cond2)
   colData(sca)$label <- label
-  # define and fit the model
-  zlmCond <- zlm(formula = ~ngeneson + label ,
-                 sca=sca, 
-                 method='glm', 
-                 ebayes=F) # to speed up calculations
   
-  # perform likelihood-ratio test for the condition that we are interested in    
-  summaryCond <- summary(zlmCond, doLRT= paste0('label', cond1))
-  # get the table with log-fold changes and p-values
+  if (use_batch && "name" %in% colnames(colData(sca))) {
+    replicate <- factor(colData(sca)$name)
+    colData(sca)$replicate <- replicate
+    zlmCond <- zlm(formula = ~ngeneson + label + (1 | replicate),
+                   sca = sca,
+                   method = 'glmer',
+                   ebayes = FALSE)
+  } else {
+    zlmCond <- zlm(formula = ~ngeneson + label,
+                   sca = sca,
+                   method = 'glm',
+                   ebayes = FALSE)
+  }
+  
+  summaryCond <- summary(zlmCond, doLRT = paste0('label', cond1))
   summaryDt <- summaryCond$datatable
-  result <- merge(summaryDt[contrast== paste0('label', cond1) & component=='H',.(primerid, `Pr(>Chisq)`)], # p-values
-                  summaryDt[contrast== paste0('label', cond1) & component=='logFC', .(primerid, coef)],
-                  by='primerid') # logFC coefficients
-  # MAST uses natural logarithm so we convert the coefficients to log2 base to be comparable to edgeR
-  result[,coef:=result[,coef]/log(2)]
-  # do multiple testing correction
-  result[,FDR:=p.adjust(`Pr(>Chisq)`, 'fdr')]
-  #result = result[result$FDR<0.05,, drop=F]
+  result <- merge(
+    summaryDt[contrast == paste0('label', cond1) & component == 'H', .(primerid, `Pr(>Chisq)`)],
+    summaryDt[contrast == paste0('label', cond1) & component == 'logFC', .(primerid, coef)],
+    by = 'primerid'
+  )
+  result[, coef := result[, coef] / log(2)]
+  result[, FDR := p.adjust(`Pr(>Chisq)`, 'fdr')]
   result <- stats::na.omit(as.data.frame(result))
   return(result)
 }
 
-list_of_results_COND_1vsCOND_2 <- list()
+list_of_restlts_D0vsWT <- list()
 
-# First comparison
-for(i in 1:length(list_of_subpops_COND_1vsCOND_2)){
+
+
+#first comparison
+
+for(i in 1:length(list_of_subpops_D0vsWT)){
   tryCatch({
-    print(paste0("calculating_MAST_COND_1vsCOND_2_for_", names(list_of_subpops_COND_1vsCOND_2)[[i]]))
-    list_of_results_COND_1vsCOND_2[[i]] <- find_de_MAST_COND_1vsCOND_2(list_of_subpops_COND_1vsCOND_2[[i]])
-    names(list_of_results_COND_1vsCOND_2)[[i]] <- names(list_of_subpops_COND_1vsCOND_2)[[i]]
-    colnames(list_of_results_COND_1vsCOND_2[[i]]) <- c("GeneID", "pval", "lfc", "FDR")
-    list_of_results_COND_1vsCOND_2[[i]]  <- list_of_results_COND_1vsCOND_2[[i]]  %>%
+    print(paste0("calculating_MAST_", cond1, "vs" , cond2, "_for_", names(list_of_subpops_D0vsWT)[[i]]))
+    list_of_restlts_D0vsWT[[i]] <-find_de_MAST_D0vsWT(list_of_subpops_D0vsWT[[i]])
+    names(list_of_restlts_D0vsWT)[[i]] <- names(list_of_subpops_D0vsWT)[[i]]
+    colnames(list_of_restlts_D0vsWT[[i]]) <- c("GeneID", "pval", "lfc", "FDR")
+    list_of_restlts_D0vsWT[[i]]  <- list_of_restlts_D0vsWT[[i]]  %>%
       mutate(t_stat = (-log10(pval) * sign(lfc)))
-    write.csv(list_of_results_COND_1vsCOND_2[[i]], file = paste0( cond1 ,"vs", cond2, "_", names(list_of_results_COND_1vsCOND_2)[[i]], ".csv"))
+    write.csv(list_of_restlts_D0vsWT[[i]], file = paste0( cond1 ,"vs", cond2, "_", names(list_of_restlts_D0vsWT)[[i]], ".csv"))
   }, error = function(e){
     # Handle the error (e.g., print an error message)
     cat("Error in iteration", i, ":", conditionMessage(e), "\n")
   })
 }
+
+

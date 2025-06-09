@@ -4,12 +4,11 @@ nextflow.enable.dsl = 2
 
 // Define base directory and subdirectories
 
-def outdir = "${PWD}/MAST_${params.cond1}vs${params.cond2}"
+def outdir = "${PWD}/MAST_${params.cond1}vs${params.cond2}_${params.output_1}"
 def tables = "${outdir}/tables"
 def plots = "${outdir}/plots"
 def volcano = "${outdir}/plots/volcano"
 def top_gens = "${outdir}/plots/top_gens"
-
 
 // Process to ensure all directories exist
 process createDirectories {
@@ -24,6 +23,7 @@ process createDirectories {
     mkdir -p "${plots}"
     mkdir -p "${volcano}"
     mkdir -p "${top_gens}"
+
     """
 }
 
@@ -33,7 +33,7 @@ process runRscript {
 
     clusterOptions = '--ntasks=1  --mem=45Gb --time=24:00:00'
 
-    def rscript_path = "${PWD}/scripts/MAST_rcript.R"  // Correct path to the R script
+    def rscript_path = "${PWD}/scripts/MAST_rcript_1.R"  // Correct path to the R script
 
     // Define the publish directory
     publishDir "${outdir}/tables", mode: 'copy'
@@ -50,7 +50,7 @@ process runRscript {
     // The script block for execution
     script:
     """
-    Rscript ${rscript_path} --object "${params.object}" --cond1 ${params.cond1} --cond2 ${params.cond2} --cond_colname ${params.cond_colname}  --annotation ${params.annotation}  --outdir "${tables}"    
+    Rscript ${rscript_path} --object "${params.object}" --cond1 ${params.cond1} --cond2 ${params.cond2} --cond_colname ${params.cond_colname} --batch_colname ${params.batch_colname}  --annotation ${params.annotation}  --outdir "${tables}"    
     """
 }
 
@@ -132,13 +132,13 @@ workflow {
     runRscript(params.object)
 
 
-    // Step 4: Process the CSV files
-    processCSVFiles(runRscript.out)
-
-    // Step 5: Process additional data (like a volcano plot)
+    // Step 3: Process the CSV files for volcano plot
     processvolcano(runRscript.out)
 
-    // Step 6: Process the top 20 data
+    // Step 4: Process to plot top 20 data
     processtop_20(runRscript.out)
 
+    // Step 5: Process to plot barplot of higly disregualted clusters
+    processCSVFiles(runRscript.out)
+    
 }

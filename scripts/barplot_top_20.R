@@ -85,7 +85,8 @@ for(i in 1:length(mlist)){
   bottom_entries <- tail(mlist[[i]], n = bottom_n)# Select the bottom entries
   tlist[[i]] <- rbind(head(mlist[[i]],n = 20),tail(mlist[[i]],n = 20))
   color_vector <- c(rep("red2", top_n), rep("slateblue4", bottom_n))
-  
+  tlist[[i]][, 2] <- factor(tlist[[i]][, 2], levels = rev(tlist[[i]][, 2]))
+
 }
 
 names(tlist) <- names(mlist)

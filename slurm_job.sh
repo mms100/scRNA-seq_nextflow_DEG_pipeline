@@ -6,15 +6,20 @@
 ### Time to execute
 #SBATCH --time=96:00:00
 
-#SBATCH --mem-per-cpu=15G
+### amount of memory 
+#SBATCH --mem-per-cpu=100G
 
-### OpenMP threads
-#SBATCH --cpus-per-task=3
+### amount of cores
+#SBATCH --cpus-per-task=10
 
-# Load necessary modules (if any)
-module load scRNA/1.0.4  # Nextflow requires Java
-module load R/4.2.3  # If Nextflow is installed as a module
+# Load necessary modules on HPC
+module load scRNA/1.0.4  
+module load R/4.2.3  
 
-# Run Nextflow
-//path/to/nextflow_excutor run path/to/main.nf --object "/path/to/seurat_object.rds" --cond1 "Mutated" --cond2 "WT" --annotation "RNA_snn_res.0.1" --cond_colname "stage"
 
+# Run pipeline with batch
+//path/to/nextflow_excutor run path/to/main.nf  --object "/path/to/seurat_object.rds" --cond1 "g1" --cond2 "g2" --annotation "RNA_snn_res.0.8" --cond_colname "groups"  --batch_colname "letter.idents" --output_1 "Pbmc_batch"
+
+
+# Run pipeline without batch
+#//path/to/nextflow_excutor run path/to/main.nf  --object "/path/to/seurat_object.rds" --cond1 "g1" --cond2 "g2" --annotation "RNA_snn_res.0.8" --cond_colname "groups"  --output_1 "Pbmc_no_batch"

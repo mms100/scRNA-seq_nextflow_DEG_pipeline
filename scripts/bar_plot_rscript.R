@@ -3,23 +3,15 @@
 #load needed libraries####
 
 library(dplyr)
-library(Seurat)
 library(tidyverse)
 library(ggplot2)
 library(dplyr)
-library(SeuratData)
-library(patchwork)
-library(SingleCellExperiment)
 library(pheatmap)
-library(SeuratObject) 
-library(SeuratWrappers)
 library(cowplot)
-library(edgeR)
 library(Matrix)
 library(reshape2)
 library(S4Vectors)
 library(png)
-library(DESeq2)
 library(RColorBrewer)
 library(data.table)
 library(readr)
@@ -32,10 +24,12 @@ args <- commandArgs(trailingOnly = TRUE)
 
 inputdir <- args[which(args == "--input_dir_1") + 1] # Get the value after '--var2'
 outdir <- args[which(args == "--outdir_2") + 1] # Get the value after '--var2'
-
+organ <- args[which(args == "--params.output_1") + 1] # Get the value after '--var2'
+cond1 <- args[which(args == "--cond1") + 1] 
+cond2 <- args[which(args == "--cond2") + 1] 
 
 #in my PC
-filtered_list_seurat_object_COND1vsCOND2 <- list()
+filtered_list <- list()
 
 
 
@@ -65,52 +59,58 @@ for(i in 1:length(names_subcluster)){
 print("str_captured")
 
 #import the CSV files
-filtered_list_seurat_object_COND1vsCOND2 <- lapply(csv_files, read.csv)
+filtered_list <- lapply(csv_files, read.csv)
 
 
 for(i in 1:length(names_subcluster_3)){
-  names(filtered_list_seurat_object_COND1vsCOND2)[[i]] <- names_subcluster_3[[i]]
+  names(filtered_list)[[i]] <- names_subcluster_3[[i]]
 }
 
 #filter to include only significant DEG
 
 for(i in 1:length(names_subcluster_3)){
-  names(filtered_list_seurat_object_COND1vsCOND2)[[i]] <- names_subcluster_3[[i]]
-  filtered_list_seurat_object_COND1vsCOND2[[i]] <- filtered_list_seurat_object_COND1vsCOND2[[i]] %>% filter(FDR <= 0.05) %>% filter(lfc <= -0.25 | lfc >= 0.25)
+  names(filtered_list)[[i]] <- names_subcluster_3[[i]]
+  filtered_list[[i]] <- filtered_list[[i]] %>% filter(FDR <= 0.05) %>% filter(lfc <= -0.25 | lfc >= 0.25)
 }
 
-filtered_list_seurat_object_COND1vsCOND2 <- Filter(function(df) nrow(df) > 0, filtered_list_seurat_object_COND1vsCOND2)
+filtered_list <- Filter(function(df) nrow(df) > 0, filtered_list)
 
 
 
-comparisons <- c("Data_seurat_object_COND1vsCOND2")
+comparisons <- c("Data_CML_D0vsWT")
 list_of_comparisons <- list()
 
 
 for(i in 1){
-  list_of_comparisons[[1]]<- data.frame(matrix(nrow = 2, ncol = length(filtered_list_seurat_object_COND1vsCOND2)))
+  list_of_comparisons[[1]]<- data.frame(matrix(nrow = 2, ncol = length(filtered_list)))
   names(list_of_comparisons)[[i]] <- comparisons[i]
 }
 
-colnames(list_of_comparisons[[1]]) <- names(filtered_list_seurat_object_COND1vsCOND2)
+colnames(list_of_comparisons[[1]]) <- names(filtered_list)
 
 
 
-data_1<- data.frame(matrix(nrow = 2, ncol = length(filtered_list_seurat_object_COND1vsCOND2)))
+#data_1<- data.frame(matrix(nrow = 2, ncol = length(filtered_list)))
+data_1 <- data.frame(matrix(0, nrow = 2, ncol = length(filtered_list)))
 
 
-for(i in 1:length(filtered_list_seurat_object_COND1vsCOND2)) {
+
+for(i in 1:length(filtered_list)) {
   #first comparison
-  list_of_comparisons[[1]] <- as.data.frame(table(sign(filtered_list_seurat_object_COND1vsCOND2[[i]]$lfc)))
-  data_1[,i] <- list_of_comparisons[[1]]$Freq
-  colnames(data_1) <- names(filtered_list_seurat_object_COND1vsCOND2)
-  
-}
+  list_of_comparisons[[1]] <- as.data.frame(table(sign(filtered_list[[i]]$lfc)))
+  list_of_comparisons[[1]]$Var1 <- as.numeric(as.character(list_of_comparisons[[1]]$Var1))
+  if(!(-1 %in% list_of_comparisons[[1]]$Var1)) {
+    list_of_comparisons[[1]] <- rbind(list_of_comparisons[[1]], data.frame(Var1 = -1, Freq = 0))
+  }
+  if(!(1 %in% list_of_comparisons[[1]]$Var1)) {
+    list_of_comparisons[[1]] <- rbind(list_of_comparisons[[1]], data.frame(Var1 = 1, Freq = 0))
+  }
+  list_of_comparisons[[1]] <- list_of_comparisons[[1]][order(list_of_comparisons[[1]]$Var1), ]
+  list_of_comparisons[[1]]$Product <- list_of_comparisons[[1]]$Var1 * list_of_comparisons[[1]]$Freq
+  data_1[,i] <- list_of_comparisons[[1]]$Product
+  colnames(data_1) <- names(filtered_list)
+  }
 
-
-
-#multiplie downregulated values by -1
-data_1[1, ] <- data_1[1, ] * -1
 
 
 data_1$regulation <- c("Down", "UP")
@@ -150,10 +150,10 @@ list_of_pivoted[[1]]%>%
   scale_x_discrete(limits = the_order_list[[1]]) +
   # another trick!
   scale_y_continuous(
-    breaks = pretty_breaks(n = 50),  # Adjust 'n' for desired number of breaks
+    breaks = pretty_breaks(n = 20), 
     labels = abs
   )+
-  labs(x = "cluster", y = "Number of regulated genes with threshold (FDR=0.05, lfc=+/-0.25) ", title = comparisons[1]) +
+  labs(x = "cluster", y = "Number of regulated genes with threshold (FDR=0.05, lfc=+/-0.25) ", title = paste0(organ, '_', cond1,'_', cond2)) +
   theme(legend.position = "bottom",
         legend.title = element_blank(),
         plot.title = element_text(hjust = 0.5),
@@ -164,7 +164,7 @@ list_of_pivoted[[1]]%>%
                     breaks=c("Down", "UP"),
                     labels=c("Down", "UP"))+
   theme(axis.text.y = element_text(face= "bold", size= 10))+
-  theme(axis.text.x = element_text(  size= 7, angle = 45))
+  theme(axis.text.x = element_text(  size= 10, angle = 45, vjust = 1, hjust = 1))
 
 
 dev.off()
