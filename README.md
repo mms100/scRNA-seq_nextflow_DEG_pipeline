@@ -28,6 +28,26 @@ main.nf = the pipeline protocol
 
 # Running using slurm executor
 
+sbatch slurm_job.sh 
+
+# prerequisite packages to be installed in R studio
+## Reproducing the R Environment
+
+This project uses [renv](https://rstudio.github.io/renv/) for reproducible R environments.
+
+To recreate the environment:
+
+1. Install renv (if not already installed):
+
+   install.packages("renv")
+
+
+2. In the project directory, run:
+
+   renv::restore()
+
+This will install all packages as specified in `renv.lock`.
+
 ####
 
 
