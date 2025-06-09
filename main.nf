@@ -33,7 +33,7 @@ process runRscript {
 
     clusterOptions = '--ntasks=1  --mem=45Gb --time=24:00:00'
 
-    def rscript_path = "${PWD}/scripts/MAST_rcript_1.R"  // Correct path to the R script
+    def rscript_path = "${PWD}/scripts/MAST_rcript.R"  // Correct path to the R script
 
     // Define the publish directory
     publishDir "${outdir}/tables", mode: 'copy'
