@@ -10,7 +10,7 @@ tryCatch({
     library(data.table)
     library(knitr)
     library(stringr)
-    library(NMF)
+    library(lme4)
     library(rsvd)
     library(RColorBrewer)
     library(MAST)
@@ -20,7 +20,6 @@ tryCatch({
     library(SingleCellExperiment)
     library(Seurat)
     library(SeuratObject)
-    library(SeuratWrappers)
     library(optparse)  # For command-line argument parsing
     source("//data/Schneider_lab/biopsy_MPN_CML/CML/data/cloned_pipeline/R/save_load_helper.R")
   })
