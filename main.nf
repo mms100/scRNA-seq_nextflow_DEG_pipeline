@@ -23,6 +23,7 @@ process createDirectories {
 }
 
 process runRscript {
+    publishDir "${params.tables}", mode: 'copy',overwrite: true, pattern: "*.csv"
     input:
     tuple path(dummy1), val(x)
 
