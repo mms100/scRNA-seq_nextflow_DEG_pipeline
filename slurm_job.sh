@@ -13,8 +13,7 @@
 #SBATCH --cpus-per-task=10
 
 # Load necessary modules if you have on your HPC
-module load scRNA/1.0.4  
-module load R/4.2.3  
+module load R/4.3.2
 
 
 # Run pipeline with batch
