@@ -94,10 +94,10 @@ symmetric_limits <- function (x)
 for(i in 1:length(mlist)){
   
   bar.1 <- rbind(
-    top_n(x = mlist[[i]], n = 10, wt = t_stat),
-    top_n(x = mlist[[i]], n = -10, wt = t_stat)
+    top_n(x = mlist[[i]], n = 20, wt = t_stat),
+    top_n(x = mlist[[i]], n = -20, wt = t_stat)
   )
-  bar.1$DEG <- c(rep("UP", 10), rep("DOWN", 10))
+  bar.1$DEG <- c(rep("UP", 20), rep("DOWN", 20))
   
   # Reverse factor levels so positive values are on top
   bar.1$GeneID <- factor(bar.1$GeneID, levels = rev(bar.1$GeneID))
