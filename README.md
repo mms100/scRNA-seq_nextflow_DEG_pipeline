@@ -28,8 +28,8 @@ main.nf = the pipeline protocol
 **Example:** 
 
 <pre>
-instead of --annotation= annotation 1 (B cells 1, T cells 2, ... etc.)
-use        --annotation= annotation_1 (B_cells_1, T_cells_2, ... etc.)
+instead of --annotation= "annotation 1" [and in the acctual annotation in the metadata (B cells 1, T cells 2, ... etc.)]
+use        --annotation= "annotation_1" [and in the acctual annotation in the metadata (B_cells_1, T_cells_2, ... etc.)]
 </pre>
 
 # Running using slurm executor
