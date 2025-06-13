@@ -16,13 +16,19 @@ main.nf = the pipeline protocol
 
 --cond2 = the second condition in the pariwise comparison
 
---annotation = the celltype column in the seurat metadat
+--annotation = the celltype column in the seurat metadata 
 
---cond_colname = the column that contains conditions 
+--cond_colname = the column name that contains conditions 
 
---batch_colname = the column that contains batch info.
+--batch_colname = the column name that contains batch info
 
 --output_1 = name of the output repository 
+
+Note: no sapce or special character is allowed in any of the previously listed metadata ( cond1, cond2, ... etc.)
+Example: 
+
+instead of --annotation= annotation 1 (B cells 1, T cells 2, ... etc.) 
+use        --annotation= annotation_1 (B_cells_1, T_cells_2, ... etc.) 
 
 # Running using slurm executor
 
