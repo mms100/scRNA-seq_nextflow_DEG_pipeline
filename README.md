@@ -27,7 +27,7 @@ main.nf = the pipeline protocol
 **Note:** no sapce or special character is allowed in any of the previously listed metadata ( cond1, cond2, ... etc.)
 **Example:** 
 
-**instead of ** --annotation= annotation 1 (B cells 1, T cells 2, ... etc.) 
+**instead** **of** --annotation= annotation 1 (B cells 1, T cells 2, ... etc.) 
 
 **use**         --annotation= annotation_1 (B_cells_1, T_cells_2, ... etc.) 
 
