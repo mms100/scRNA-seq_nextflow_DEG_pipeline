@@ -32,7 +32,7 @@ sbatch slurm_job.sh
 
 **nextflow version** 24.04.2.5914
 
-## Reproducing the R Environment
+## Reproducing the R/4.3.2 Environment
 
 This project uses [renv](https://rstudio.github.io/renv/) for reproducible R environments.
 
