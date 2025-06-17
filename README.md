@@ -4,7 +4,7 @@ A repository establishing a nextflow pipeline for applying MAST DEG analysis (Fi
 
 # Parameters list
 
-//path/to/nextflow_excutor run path/to/main.nf  --object "/path/to/seurat_object.rds" --cond1 "g1" --cond2 "g2" --annotation "RNA_snn_res.0.8" --cond_colname "stage"  --batch_colname "library_name" --output_1 "batch_on"
+//path/to/nextflow_excutor run path/to/main.nf  --object "/path/to/seurat_object.rds" --cond1 "g1" --cond2 "g2" --annotation "RNA_snn_res.0.8" --cond_colname "stage"  --batch_colname "library_name" 
 
 **#parameters list**
 
@@ -22,7 +22,6 @@ main.nf = the pipeline protocol
 
 --batch_colname = the column name that contains batch info
 
---output_1 = name of the output repository 
 
 **Note:** no sapce or special character is allowed in any of the previously listed metadata ( cond1, cond2, ... etc.)
 **Example:** 
