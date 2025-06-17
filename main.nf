@@ -1,7 +1,7 @@
 nextflow.enable.dsl = 2
 
 // Use params for all directory paths
-params.outdir   = "${PWD}/MAST_${params.cond1}vs${params.cond2}_${params.output_1}"
+params.outdir   = "${PWD}/MAST_${params.cond1}vs${params.cond2}"
 params.tables   = "${params.outdir}/tables"
 params.plots    = "${params.outdir}/plots"
 params.volcano  = "${params.outdir}/plots/volcano"
