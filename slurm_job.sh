@@ -17,8 +17,8 @@ module load R/4.3.2
 
 
 # Run pipeline with batch
-//path/to/nextflow_excutor run path/to/scRNA-seq_nextflow_DEG_pipeline/main.nf  --object "/path/to/seurat_object.rds" --cond1 "g1" --cond2 "g2" --annotation "RNA_snn_res.0.8" --cond_colname "stage"  --batch_colname "library_name" --output_1 "batch_on"
+//path/to/nextflow_excutor run path/to/scRNA-seq_nextflow_DEG_pipeline/main.nf  --object "/path/to/seurat_object.rds" --cond1 "g1" --cond2 "g2" --annotation "RNA_snn_res.0.8" --cond_colname "stage"  --batch_colname "library_name" 
 
 
 # Run pipeline without batch
-#//path/to/nextflow_excutor run path/to/scRNA-seq_nextflow_DEG_pipeline/main.nf  --object "/path/to/seurat_object.rds" --cond1 "g1" --cond2 "g2" --annotation "RNA_snn_res.0.8" --cond_colname "stage"  --output_1 "batch_off"
+#//path/to/nextflow_excutor run path/to/scRNA-seq_nextflow_DEG_pipeline/main.nf  --object "/path/to/seurat_object.rds" --cond1 "g1" --cond2 "g2" --annotation "RNA_snn_res.0.8" --cond_colname "stage"  
