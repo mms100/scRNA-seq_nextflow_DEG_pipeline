@@ -1,26 +1,10 @@
-
-library(EnhancedVolcano)
-library(dplyr)
-library(Seurat)
-library(ggplot2)
-library(dplyr)
-library(SeuratData)
-library(patchwork)
-library(SingleCellExperiment)
-library(pheatmap)
-library(SeuratObject) 
-library(tidyverse)
-library(cowplot)
-library(edgeR)
-library(Matrix)
-library(reshape2)
-library(S4Vectors)
-library(png)
-library(RColorBrewer)
-library(data.table)
-library(readr)
-library(optparse)  # For command-line argument parsing
-library(scales)
+# Load required packages
+suppressPackageStartupMessages({
+  library(EnhancedVolcano)
+  library(ggplot2)  
+  library(tidyverse)        
+  library(optparse)         
+})
 
 #first capture the arguments from the shell
 args <- commandArgs(trailingOnly = TRUE)
