@@ -56,6 +56,7 @@ To recreate the environment:
    setwd("Path/to/scRNA-seq_nextflow_DEG_pipeline")
 
    renv::init() #select 1
+   
    renv::restore() #select 1
 
 This will install all packages as specified in `renv.lock`.
