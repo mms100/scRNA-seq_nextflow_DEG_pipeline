@@ -2,30 +2,18 @@
 
 # Load required packages
 # Attempt to load required packages and source an R script
+# Load required packages
 tryCatch({
   suppressPackageStartupMessages({
-    library(ggplot2)
-    library(limma)
-    library(reshape2)
-    library(data.table)
-    library(knitr)
-    library(stringr)
-    library(lme4)
-    library(rsvd)
-    library(RColorBrewer)
     library(MAST)
-    library(dplyr)
-    library(SeuratData)
-    library(patchwork)
     library(SingleCellExperiment)
     library(Seurat)
     library(SeuratObject)
-    library(optparse)
+    library(dplyr)
+    library(optparse)  # For command-line argument parsing
   })
 }, error = function(e) {
-  # Handle the error (e.g., log or print an error message)
   cat("Error during package loading or script sourcing:", conditionMessage(e), "\n")
-  # You can also log the error to a file or a monitoring system
 })
 
 
