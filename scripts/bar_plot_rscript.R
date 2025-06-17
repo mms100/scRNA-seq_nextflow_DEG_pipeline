@@ -1,23 +1,13 @@
-#prepare the plotting datafame####
 
 #load needed libraries####
-
-library(dplyr)
-library(tidyverse)
-library(ggplot2)
-library(dplyr)
-library(pheatmap)
-library(cowplot)
-library(Matrix)
-library(reshape2)
-library(S4Vectors)
-library(png)
-library(RColorBrewer)
-library(data.table)
-library(readr)
-library(optparse)  # For command-line argument parsing
-library(scales)
-
+# Load required packages
+suppressPackageStartupMessages({
+  library(dplyr)
+  library(ggplot2)       
+  library(tidyverse)  
+  library(scales)     
+  library(optparse)   
+})
 
 args <- commandArgs(trailingOnly = TRUE)
 
