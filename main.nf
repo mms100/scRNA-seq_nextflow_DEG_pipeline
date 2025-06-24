@@ -32,7 +32,7 @@ process runRscript {
 
     script:
     """
-    Rscript ${PWD}/scripts/MAST_rcript.R --object "${params.object}" --cond1 ${params.cond1} --cond2 ${params.cond2} --cond_colname ${params.cond_colname} --batch_colname ${params.batch_colname} --annotation ${params.annotation} --outdir "${params.tables}"
+    Rscript -e "setwd('${PWD}'); source('${PWD}/scripts/MAST_rcript.R')" --object "${params.object}" --cond1 ${params.cond1} --cond2 ${params.cond2} --cond_colname ${params.cond_colname} --batch_colname ${params.batch_colname} --annotation ${params.annotation} --outdir "${params.tables}"
     touch dummy2.txt
     """
 }
@@ -49,7 +49,7 @@ process processvolcano {
 
     script:
     """
-    Rscript ${PWD}/scripts/volcano_plot_rscript.R --input_dir_1 "${params.tables}" --outdir_3 "${params.volcano}" --cond1 ${params.cond1} --cond2 ${params.cond2}
+    Rscript -e "setwd('${PWD}'); source('${PWD}/scripts/volcano_plot_rscript.R')" --input_dir_1 "${params.tables}" --outdir_3 "${params.volcano}" --cond1 ${params.cond1} --cond2 ${params.cond2}
     touch dummy3.txt
     """
 }
@@ -66,7 +66,7 @@ process processtop_20 {
 
     script:
     """
-    Rscript ${PWD}/scripts/barplot_top_20.R --input_dir_1 "${params.tables}" --cond1 ${params.cond1} --cond2 ${params.cond2}
+    Rscript -e "setwd('${PWD}'); source('${PWD}/scripts/barplot_top_20.R')" --input_dir_1 "${params.tables}" --cond1 ${params.cond1} --cond2 ${params.cond2}
     touch dummy4.txt
     """
 }
@@ -83,7 +83,7 @@ process processCSVFiles {
 
     script:
     """
-    Rscript ${PWD}/scripts/bar_plot_rscript.R --input_dir_1 "${params.tables}" --outdir "${params.tables}"
+    Rscript -e "setwd('${PWD}'); source('${PWD}/scripts/bar_plot_rscript.R')" --input_dir_1 "${params.tables}" --outdir "${params.tables}"
     """
 }
 
