@@ -97,16 +97,16 @@ for(i in 1:length(filtered_list_seurat_object_COND1vsCOND2)){
 }
 
 
+pdf(file = paste0("volcano_plots_",  cond1 ,"vs", cond2, ".pdf"))
 
 for(i in 1: length(filtered_list_seurat_object_COND1vsCOND2)){
   tryCatch({
-    pdf(file = paste0("volcano",  cond1 ,"vs", cond2, "_", paste0(names(tlist)[[i]]), ".pdf"))
     print(plist[[i]])
-    dev.off()
   }, error = function(e){
     # Handle the error (e.g., print an error message)
     cat("Error in iteration", i, ":", conditionMessage(e), "\n")
   })
 }
+dev.off()
 
 
