@@ -77,18 +77,13 @@ symmetric_limits <- function (x)
   c(-max, max)
 }
 
-for(i in 1:length(mlist)){
-  
-  bar.1 <- rbind(
-    top_n(x = mlist[[i]], n = 20, wt = t_stat),
-    top_n(x = mlist[[i]], n = -20, wt = t_stat)
-  )
-  bar.1$DEG <- c(rep("UP", 20), rep("DOWN", 20))
+for(i in 1:length(tlist)){
+  tlist[[i]]$DEG <- c(rep("UP", 20), rep("DOWN", 20))
   
   # Reverse factor levels so positive values are on top
-  bar.1$GeneID <- factor(bar.1$GeneID, levels = rev(bar.1$GeneID))
+  tlist[[i]]$GeneID <- factor(tlist[[i]]$GeneID, levels = rev(tlist[[i]]$GeneID))
   
-  plist[[i]] <- ggplot(bar.1, aes(x = t_stat, y = GeneID, fill = DEG)) +
+  plist[[i]] <- ggplot(tlist[[i]], aes(x = t_stat, y = GeneID, fill = DEG)) +
     geom_bar(stat = "identity") +
     theme_classic() +
     scale_fill_manual(values = c("slateblue4", "red2")) +
@@ -97,6 +92,7 @@ for(i in 1:length(mlist)){
     ggtitle(names(mlist)[[i]]) +
     geom_vline(xintercept = 0, linetype = "dashed")
 }
+
 pdf(file = paste0("barplot_top_20_", cond1 ,"vs", cond2, ".pdf"))
 for (i in 1:length(plist)) {
   print(plist[[i]])
