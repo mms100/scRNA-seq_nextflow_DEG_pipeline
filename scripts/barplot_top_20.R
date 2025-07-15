@@ -97,7 +97,7 @@ for(i in 1:length(mlist)){
     ggtitle(names(mlist)[[i]]) +
     geom_vline(xintercept = 0, linetype = "dashed")
 }
-pdf(file = paste0("barplot_top_20", cond1 ,"vs", cond2, "_", paste0(names(tlist)[[i]]), ".pdf"))
+pdf(file = paste0("barplot_top_20_", cond1 ,"vs", cond2, ".pdf"))
 for (i in 1:length(plist)) {
   print(plist[[i]])
   
