@@ -138,6 +138,9 @@ meta_data <- Seurat_object@meta.data
 Seurat_object <- CreateSeuratObject(counts = counts, meta.data = meta_data)
 Seurat_object <- NormalizeData(Seurat_object, normalization.method = "LogNormalize", scale.factor = 10000)
 
+Seurat_object$stage <- NULL
+Seurat_object$name <- NULL
+
 #change column name of the condations from whatever it is called  to stage
 column_index <- which(colnames(Seurat_object@meta.data) == cond_colname)
 colnames(Seurat_object@meta.data)[column_index] <- "stage"
