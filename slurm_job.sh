@@ -18,7 +18,7 @@ module load R/4.4.1
 
 
 # Run pipeline without batch
-//scRNA-seq_nextflow_DEG_pipeline/nextflow \
+//path/to/executor/nextflow \
     run /scRNA-seq_nextflow_DEG_pipeline/main.nf \
     --results_dir "/scRNA-seq_nextflow_DEG_pipeline/output_WO_batch/"  \
     --object "/scRNA-seq_nextflow_DEG_pipeline/pbmc_object.Rds" \
