@@ -143,7 +143,7 @@ list_of_pivoted[[1]]%>%
     breaks = pretty_breaks(n = 20), 
     labels = abs
   )+
-  labs(x = "cluster", y = "Number of regulated genes with threshold (FDR=0.05, lfc=+/-0.25) ", title = paste0(organ, '_', cond1,'_', cond2)) +
+  labs(x = "cluster", y = "Number of regulated genes with threshold (FDR=0.05, lfc=+/-0.25) ", title = paste0(cond1,'_', cond2)) +
   theme(legend.position = "bottom",
         legend.title = element_blank(),
         plot.title = element_text(hjust = 0.5),

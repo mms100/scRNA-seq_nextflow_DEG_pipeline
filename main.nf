@@ -1,96 +1,115 @@
 nextflow.enable.dsl = 2
 
-// Use params for all directory paths
-params.outdir   = "${PWD}/MAST_${params.cond1}vs${params.cond2}"
-params.tables   = "${params.outdir}/tables"
-params.plots    = "${params.outdir}/plots"
-params.volcano  = "${params.outdir}/plots/volcano"
-params.top_gens = "${params.outdir}/plots/top_gens"
+// --- Parameters ---
+params.results_dir   = "${PWD}/results" 
+params.outdir        = "${params.results_dir}/MAST_${params.cond1}vs${params.cond2}"
+params.species       = "mouse"
 
-process createDirectories {
-    output:
-    tuple path("dummy1.txt"), val(true)
-
-    script:
-    """
-    mkdir -p "${params.outdir}"
-    mkdir -p "${params.tables}"
-    mkdir -p "${params.plots}"
-    mkdir -p "${params.volcano}"
-    mkdir -p "${params.top_gens}"
-    touch dummy1.txt
-    """
-}
-
-process runRscript {
-    publishDir "${params.tables}", mode: 'copy',overwrite: true, pattern: "*.csv"
-    input:
-    tuple path(dummy1), val(x)
-
-    output:
-    tuple path("dummy2.txt"), file("*.csv")
-
-    script:
-    """
-    Rscript ${PWD}/scripts/MAST_rcript.R --object "${params.object}" --cond1 ${params.cond1} --cond2 ${params.cond2} --cond_colname ${params.cond_colname} --batch_colname ${params.batch_colname} --annotation ${params.annotation} --outdir "${params.tables}"
-    touch dummy2.txt
-    """
-}
-
-process processvolcano {
+process runMAST {
+    // This goes into the raw_results/tables folder[cite: 1]
+    publishDir "${params.outdir}/raw_results/tables", mode: 'copy', overwrite: true, pattern: "*.csv"
     
-    publishDir "${params.volcano}", mode: 'copy',overwrite: true, pattern: "*.pdf"
-
     input:
-    tuple path(dummy2), file(csv_files)
+    val ready
 
     output:
-    tuple path("dummy3.txt"), file("*.pdf")
+    path "*.csv", emit: csv_files
 
     script:
     """
-    Rscript ${PWD}/scripts/volcano_plot_rscript.R --input_dir_1 "${params.tables}" --outdir_3 "${params.volcano}" --cond1 ${params.cond1} --cond2 ${params.cond2}
-    touch dummy3.txt
+    Rscript ${PWD}/scripts/MAST_rcript.R \
+        --object "${params.object}" \
+        --cond1 ${params.cond1} \
+        --cond2 ${params.cond2} \
+        --cond_colname ${params.cond_colname} \
+        --batch_colname ${params.batch_colname} \
+        --annotation ${params.annotation} \
+        --outdir .
     """
 }
 
-process processtop_20 {
+process filterResults {
+    // This goes into the filtered_results/tables folder[cite: 8]
+    publishDir "${params.outdir}/filtered_results/tables", mode: 'copy', overwrite: true
     
-    publishDir "${params.top_gens}", mode: 'copy',overwrite: true, pattern: "*.pdf"
-
     input:
-    tuple path(dummy3), file(csv_files)
+    path raw_csvs
 
     output:
-    tuple path("dummy4.txt"), file("*.pdf")
+    path "filtered*.csv", emit: filtered_csvs
 
     script:
     """
-    Rscript ${PWD}/scripts/barplot_top_20.R --input_dir_1 "${params.tables}" --cond1 ${params.cond1} --cond2 ${params.cond2}
-    touch dummy4.txt
+    Rscript ${PWD}/scripts/filter_script.R --input_dir . --outdir . --species "${params.species}"
     """
 }
 
-process processCSVFiles {
-    
-    publishDir "${params.plots}", mode: 'copy',overwrite: true, pattern: "barplot.pdf"
+process processVolcano {
+    // Published into: [raw or filtered]/plots/volcano
+    publishDir "${params.outdir}/${type}/plots/volcano", mode: 'copy', overwrite: true
 
     input:
-    tuple path(dummy4), file(csv_files)
+    tuple val(type), path(csv_files)
 
     output:
-    file("barplot.pdf")
+    path "*.pdf"
 
     script:
     """
-    Rscript ${PWD}/scripts/bar_plot_rscript.R --input_dir_1 "${params.tables}" --outdir "${params.tables}"
+    Rscript ${PWD}/scripts/volcano_plot_rscript.R \
+        --input_dir_1 . \
+        --outdir_3 . \
+        --cond1 ${params.cond1} \
+        --cond2 ${params.cond2}
+    """
+}
+
+process processTop20 {
+    // Published into: [raw or filtered]/plots/top_gens
+    publishDir "${params.outdir}/${type}/plots/top_gens", mode: 'copy', overwrite: true
+
+    input:
+    tuple val(type), path(csv_files)
+
+    output:
+    path "*.pdf"
+
+    script:
+    """
+    Rscript ${PWD}/scripts/barplot_top_20.R \
+        --input_dir_1 . \
+        --cond1 ${params.cond1} \
+        --cond2 ${params.cond2}
+    """
+}
+
+process processSummaryBarplot {
+    // Published into: [raw or filtered]/plots
+    publishDir "${params.outdir}/${type}/plots", mode: 'copy', overwrite: true
+
+    input:
+    tuple val(type), path(csv_files)
+
+    output:
+    path "barplot.pdf"
+
+    script:
+    """
+    Rscript ${PWD}/scripts/bar_plot_rscript.R \
+        --input_dir_1 . \
+        --outdir .
     """
 }
 
 workflow {
-    ch1 = createDirectories()
-    ch2 = runRscript(ch1)
-    ch3 = processvolcano(ch2)
-    ch4 = processtop_20(ch3)
-    processCSVFiles(ch4)
+    raw_ch   = runMAST(true)
+    filt_ch  = filterResults(raw_ch)
+
+    // Tagging the data streams to determine the subfolder names[cite: 1, 8]
+    ch_to_plot = Channel.from("raw_results").combine(raw_ch.collect().toList())
+                 .mix(Channel.from("filtered_results").combine(filt_ch.collect().toList()))
+
+    processVolcano(ch_to_plot)
+    processTop20(ch_to_plot)
+    processSummaryBarplot(ch_to_plot)
 }

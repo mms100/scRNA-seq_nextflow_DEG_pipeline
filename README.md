@@ -4,11 +4,23 @@ A repository establishing a nextflow pipeline for applying MAST DEG analysis (Fi
 
 # Parameters list
 
-//path/to/nextflow_excutor run path/to/main.nf  --object "/path/to/seurat_object.rds" --cond1 "g1" --cond2 "g2" --annotation "RNA_snn_res.0.8" --cond_colname "stage"  --batch_colname "library_name" 
+//scRNA-seq_nextflow_DEG_pipeline/nextflow \
+    run /scRNA-seq_nextflow_DEG_pipeline/main.nf \
+    --results_dir "/scRNA-seq_nextflow_DEG_pipeline/output_WO_batch/"  \
+    --object "/scRNA-seq_nextflow_DEG_pipeline/pbmc_object.Rds" \
+    --cond1 "g1" \
+    --cond2 "g2" \
+    --annotation "letter.idents" \
+    --batch_colname "NULL"   \
+    --cond_colname "groups" \
+    --species "human"
+    
 
 **#parameters list**
 
 main.nf = the pipeline protocol
+
+--results_dir = path to output
 
 --object = path for the seurat object
 
@@ -18,17 +30,20 @@ main.nf = the pipeline protocol
 
 --annotation = the celltype column in the seurat metadata 
 
---cond_colname = the column name that contains conditions 
-
 --batch_colname = the column name that contains batch info
 
+--cond_colname = the column name that contains conditions 
 
-**Note:** no sapce or special character is allowed in any of the previously listed metadata ( cond1, cond2, ... etc.)
+--species = "human" / "mouse"
+
+
+
+**Note:** no sapce or special character is allowed in cond_colname ( cond1, cond2)
 **Example:** 
 
 <pre>
-instead of --annotation= "annotation 1" [and in the acctual annotation in the metadata (B cells 1, T cells 2, ... etc.)]
-use        --annotation= "annotation_1" [and in the acctual annotation in the metadata (B_cells_1, T_cells_2, ... etc.)]
+instead of --cond_colname= "cond_1" 
+use        --cond_colname= "cond1" 
 </pre>
 
 # Running using slurm executor
@@ -39,26 +54,23 @@ sbatch slurm_job.sh
 
 **nextflow version** 24.04.2.5914
 
-## Reproducing the R/4.3.2 Environment
+## Reproducing the R/4.4.1 Environment
 
-This project uses [renv](https://rstudio.github.io/renv/) for reproducible R environments.
+# following packages are needed
+Bioconductor Version: V(3.20)
+library(tidyverse) V(2.0.0)
+library(scales) V(1.4.0)
+library(SingleCellExperiment) V(1.28.1)
+library(Seurat) V(4.4.0)
+library(SeuratObject) V(4.1.4)
+library(MAST) V(1.32.0)
+library(EnhancedVolcano) V(1.24.0)
+library(optparse) V(1.8.2)
+library(archive) V(1.1.13)
 
-To recreate the environment:
-
-1. Install renv (if not already installed):
-
-   install.packages("renv")
-
-
-2. In the project directory, run:
-   
-   setwd("Path/to/scRNA-seq_nextflow_DEG_pipeline")
-
-   renv::init() #select 1
-   
-   renv::restore() #select 1
-
-This will install all packages as specified in `renv.lock`.
+# note  please install V4 of seurat using the following:
+remotes::install_version("Seurat", "4.4.0", repos = c("https://satijalab.r-universe.dev", getOption("repos")))
+remotes::install_version("SeuratObject", "4.1.4", repos = c("https://satijalab.r-universe.dev", getOption("repos")))
 
 ####
 

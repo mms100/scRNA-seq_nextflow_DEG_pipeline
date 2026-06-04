@@ -138,21 +138,19 @@ meta_data <- Seurat_object@meta.data
 Seurat_object <- CreateSeuratObject(counts = counts, meta.data = meta_data)
 Seurat_object <- NormalizeData(Seurat_object, normalization.method = "LogNormalize", scale.factor = 10000)
 
-Seurat_object$stage <- NULL
-Seurat_object$name <- NULL
 
-#change column name of the condations from whatever it is called  to stage
+#change column name of the condations from whatever it is called  to s1t2a3g4e5
 column_index <- which(colnames(Seurat_object@meta.data) == cond_colname)
-colnames(Seurat_object@meta.data)[column_index] <- "stage"
+colnames(Seurat_object@meta.data)[column_index] <- "s1t2a3g4e5"
 
-#change column name of the batch from whatever it is called  to "name"
+#change column name of the batch from whatever it is called  to "n1a2m3e4"
 if (use_batch && batch_colname %in% colnames(Seurat_object@meta.data)) {
   column_index <- which(colnames(Seurat_object@meta.data) == batch_colname)
-  colnames(Seurat_object@meta.data)[column_index] <- "name"
+  colnames(Seurat_object@meta.data)[column_index] <- "n1a2m3e4"
 }
-#change column name of the cell_type from whatever it is called  to "annotation"
+#change column name of the cell_type from whatever it is called  to "a1n2n3o4"
 column_index <- which(colnames(Seurat_object@meta.data) == anno)
-colnames(Seurat_object@meta.data)[column_index] <- "annotation"
+colnames(Seurat_object@meta.data)[column_index] <- "a1n2n3o4"
 
 
 print("object_Normalized")
@@ -161,23 +159,23 @@ print("object_Normalized")
 include_conditions <- c(cond1, cond2)
 
 # Subset to include only rows with the desired conditions
-Seurat_object_D0WT <- subset(Seurat_object, stage %in% include_conditions)
+Seurat_object_D0WT <- subset(Seurat_object, s1t2a3g4e5 %in% include_conditions)
 
 #remove cells that has no cells in one of the conditions
-table_cells <- as.data.frame.matrix(table(Seurat_object_D0WT$annotation, Seurat_object_D0WT$stage))
+table_cells <- as.data.frame.matrix(table(Seurat_object_D0WT$a1n2n3o4, Seurat_object_D0WT$s1t2a3g4e5))
 df_no_zeros <- table_cells[apply(table_cells, 1, function(row) all(row > 1)), ]
 no_zero_cells <- rownames(df_no_zeros)
-Seurat_object_D0WT <- SetIdent(Seurat_object_D0WT, value = "annotation")
+Seurat_object_D0WT <- SetIdent(Seurat_object_D0WT, value = "a1n2n3o4")
 Seurat_object_D0WT <- subset(Seurat_object_D0WT, idents = no_zero_cells)
 print("object_cleaned_from_zero_cells")
 
 # Drop unused levels
-Seurat_object_D0WT$stage <- factor(Seurat_object_D0WT$stage) #remeber to remove this in real data
-Seurat_object_D0WT$stage <- droplevels(Seurat_object_D0WT$stage)
+Seurat_object_D0WT$s1t2a3g4e5 <- factor(Seurat_object_D0WT$s1t2a3g4e5) #remeber to remove this in real data
+Seurat_object_D0WT$s1t2a3g4e5 <- droplevels(Seurat_object_D0WT$s1t2a3g4e5)
 print("object_Subseted")
 
 # Split into sub-objects
-list_of_subpops_D0vsWT <- SplitObject(Seurat_object_D0WT, split.by = "annotation")
+list_of_subpops_D0vsWT <- SplitObject(Seurat_object_D0WT, split.by = "a1n2n3o4")
 print("object_Splitted")
 
 # Convert Seurat objects to SingleCellExperiment
@@ -196,12 +194,13 @@ find_de_MAST_D0vsWT <- function(adata_) {
   sca <- sca[freq(sca) > 0.1, ]
   cdr2 <- colSums(assay(sca) > 0)
   colData(sca)$ngeneson <- scale(cdr2)
-  label <- factor(colData(sca)$stage)
+  colData(sca)$log_counts <- scale(log(colSums(assay(sca)))) #this is added for ckd data
+  label <- factor(colData(sca)$s1t2a3g4e5)
   label <- relevel(label, cond2)
   colData(sca)$label <- label
   
-  if (use_batch && "name" %in% colnames(colData(sca))) {
-    replicate <- factor(colData(sca)$name)
+  if (use_batch && "n1a2m3e4" %in% colnames(colData(sca))) {
+    replicate <- factor(colData(sca)$n1a2m3e4)
     colData(sca)$replicate <- replicate
     zlmCond <- zlm(formula = ~ngeneson + label + (1 | replicate),
                    sca = sca,
