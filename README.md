@@ -2,11 +2,17 @@
 A repository establishing a nextflow pipeline for applying MAST DEG analysis (Finak et al., 2015) 
 
 input: Seurat object with Raw counts
+
 outputs: 
+
 1- csv files of Differentailly expressed genes (DEGs) per each cell type
+
 2- csv files of DEGs after removal of mitochondrial, hemoglobin, Immunoglobulins/Plasma genes
+
 3- Volcano plots
+
 4- barplot for cells with highest DEGs number
+
 5- barplot ranking genes using t_stat = -log10(pval) x sign(lfc)
 
 # Parameters list
