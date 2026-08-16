@@ -1,13 +1,11 @@
 nextflow.enable.dsl = 2
 
-// --- Parameters ---
-params.results_dir   = "${PWD}/results" 
-params.outdir        = "${params.results_dir}/MAST_${params.cond1}vs${params.cond2}"
-params.species       = "mouse"
+// --- define results directory ---
+def outdir = "${params.results_dir}/MAST_${params.cond1}vs${params.cond2}"
 
 process runMAST {
     // This goes into the raw_results/tables folder[cite: 1]
-    publishDir "${params.outdir}/raw_results/tables", mode: 'copy', overwrite: true, pattern: "*.csv"
+    publishDir "${outdir}/raw_results/tables", mode: 'copy', overwrite: true, pattern: "*.csv"
     
     input:
     val ready
@@ -24,13 +22,14 @@ process runMAST {
         --cond_colname ${params.cond_colname} \
         --batch_colname ${params.batch_colname} \
         --annotation ${params.annotation} \
+        --cell_to_filter "${params.cell_to_filter}" \
         --outdir .
     """
 }
 
 process filterResults {
     // This goes into the filtered_results/tables folder[cite: 8]
-    publishDir "${params.outdir}/filtered_results/tables", mode: 'copy', overwrite: true
+    publishDir "${outdir}/filtered_results/tables", mode: 'copy', overwrite: true
     
     input:
     path raw_csvs
@@ -45,8 +44,8 @@ process filterResults {
 }
 
 process processVolcano {
-    // Published into: [raw or filtered]/plots/volcano
-    publishDir "${params.outdir}/${type}/plots/volcano", mode: 'copy', overwrite: true
+    // Published into: [raw or filtered]/plots
+    publishDir "${outdir}/${type}/plots", mode: 'copy', overwrite: true
 
     input:
     tuple val(type), path(csv_files)
@@ -65,8 +64,8 @@ process processVolcano {
 }
 
 process processTop20 {
-    // Published into: [raw or filtered]/plots/top_gens
-    publishDir "${params.outdir}/${type}/plots/top_gens", mode: 'copy', overwrite: true
+    // Published into: [raw or filtered]/plots
+    publishDir "${outdir}/${type}/plots", mode: 'copy', overwrite: true
 
     input:
     tuple val(type), path(csv_files)
@@ -85,7 +84,7 @@ process processTop20 {
 
 process processSummaryBarplot {
     // Published into: [raw or filtered]/plots
-    publishDir "${params.outdir}/${type}/plots", mode: 'copy', overwrite: true
+    publishDir "${outdir}/${type}/plots", mode: 'copy', overwrite: true
 
     input:
     tuple val(type), path(csv_files)
@@ -97,6 +96,8 @@ process processSummaryBarplot {
     """
     Rscript ${PWD}/scripts/bar_plot_rscript.R \
         --input_dir_1 . \
+        --cond1 ${params.cond1} \
+        --cond2 ${params.cond2} \
         --outdir .
     """
 }

@@ -54,7 +54,7 @@ for (f in csv_files) {
   df_filtered <- df[df$GeneID %in% filtered_genes, ]
   
   # Rename the file to avoid collision
-  new_name <- paste0('filtered_', basename(f))
+  new_name <- paste0('filtered', basename(f))
   write.csv(df_filtered, file = file.path(opt$outdir, new_name), row.names = FALSE)
 }
 
