@@ -26,7 +26,8 @@ outputs:
     --annotation "letter.idents" \
     --batch_colname "NULL"   \
     --cond_colname "groups" \
-    --species "human"
+    --species "human" \
+    --cell_to_filter
     
 
 **#parameters list**
@@ -48,6 +49,8 @@ main.nf = the pipeline protocol
 --cond_colname = the column name that contains conditions 
 
 --species = "human" / "mouse"
+
+--cell_to_filter = cell types to be excluded from the analysis
 
 
 
