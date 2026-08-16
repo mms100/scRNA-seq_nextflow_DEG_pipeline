@@ -27,7 +27,8 @@ module load R/4.4.1
     --annotation "letter.idents" \
     --batch_colname "NULL"   \
     --cond_colname "groups" \
-    --species "human"
+    --species "human" \
+    --cell_to_filter "Cell_type1, Cell_type_2"
     
 # Run pipeline with batch
 #//path/to/executor/nextflow \
@@ -39,4 +40,5 @@ module load R/4.4.1
 #    --annotation "letter.idents" \
 #    --batch_colname "RNA_snn_res.1"   \
 #    --cond_colname "groups" \
-#    --species "human"
+#    --species "human" \
+#    --cell_to_filter "Cell_type1, Cell_type_2"
