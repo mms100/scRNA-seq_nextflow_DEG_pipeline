@@ -120,6 +120,15 @@ cond2 <- args[which(args == "--cond2") + 1]
 anno <- args[which(args == "--annotation") + 1]
 cond_colname <- args[which(args == "--cond_colname") + 1]
 batch_colname <- args[which(args == "--batch_colname") + 1]
+
+# Extract --cell_to_filter argument safely
+cell_to_filter_idx <- which(args == "--cell_to_filter")
+if (length(cell_to_filter_idx) > 0 && (cell_to_filter_idx + 1) <= length(args)) {
+  cell_to_filter <- args[cell_to_filter_idx + 1]
+} else {
+  cell_to_filter <- NULL
+}
+
 if (is.null(batch_colname) || batch_colname == "" || batch_colname == "NULL") {
   use_batch <- FALSE
 } else {
@@ -130,6 +139,202 @@ if (is.null(batch_colname) || batch_colname == "" || batch_colname == "NULL") {
 
 Seurat_object <- load_object(object)
 print("object_imported")
+
+# ==============================================================================
+# CELL TYPE VALIDATION, FILTERING & LOGGING
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Check if the requested annotation column exists in Seurat metadata
+# ------------------------------------------------------------------------------
+if (!(anno %in% colnames(Seurat_object@meta.data))) {
+  stop(
+    paste0(
+      "Error: Specified annotation column '", anno,
+      "' not found in Seurat object metadata!\n",
+      "Available metadata columns are: ",
+      paste(colnames(Seurat_object@meta.data), collapse = ", ")
+    )
+  )
+}
+
+
+# ------------------------------------------------------------------------------
+# 2. Check whether cell types were specified for filtering
+# ------------------------------------------------------------------------------
+if (!is.null(cell_to_filter) &&
+    cell_to_filter != "" &&
+    cell_to_filter != "NULL") {
+
+  # --------------------------------------------------------------------------
+  # 3. Parse input string into a character vector
+  # --------------------------------------------------------------------------
+  cells_to_remove <- trimws(
+    unlist(strsplit(cell_to_filter, ","))
+  )
+
+  # Remove empty entries, if any
+  cells_to_remove <- cells_to_remove[cells_to_remove != ""]
+
+
+  # --------------------------------------------------------------------------
+  # 4. Get available cell types from the annotation column
+  # --------------------------------------------------------------------------
+  available_cell_types <- unique(
+    as.character(Seurat_object@meta.data[[anno]])
+  )
+
+  # Remove NA from available cell types for cleaner reporting
+  available_cell_types <- available_cell_types[
+    !is.na(available_cell_types)
+  ]
+
+
+  # --------------------------------------------------------------------------
+  # 5. Validate requested cell types
+  # --------------------------------------------------------------------------
+  invalid_cells <- setdiff(
+    cells_to_remove,
+    available_cell_types
+  )
+
+  valid_cells_to_remove <- intersect(
+    cells_to_remove,
+    available_cell_types
+  )
+
+
+  # --------------------------------------------------------------------------
+  # 6. Warn about cell types that were not found
+  # --------------------------------------------------------------------------
+  if (length(invalid_cells) > 0) {
+
+    warning(
+      paste0(
+        "The following cell types specified in --cell_to_filter ",
+        "were NOT found in metadata column '", anno, "': ",
+        paste(invalid_cells, collapse = ", "),
+        "\nAvailable cell types are: ",
+        paste(available_cell_types, collapse = ", ")
+      )
+    )
+  }
+
+
+  # --------------------------------------------------------------------------
+  # 7. Filter valid cell types
+  # --------------------------------------------------------------------------
+  if (length(valid_cells_to_remove) > 0) {
+
+    message(
+      "Filtering out specified cell types: ",
+      paste(valid_cells_to_remove, collapse = ", ")
+    )
+
+
+    # Identify cells to keep
+    keep_cells <- colnames(Seurat_object)[
+      !(Seurat_object@meta.data[[anno]] %in% valid_cells_to_remove)
+    ]
+
+
+    # Subset Seurat object
+    Seurat_object <- subset(
+      Seurat_object,
+      cells = keep_cells
+    )
+
+
+    # ------------------------------------------------------------------------
+    # 8. Filtering summary / logging
+    # ------------------------------------------------------------------------
+    cat("\n")
+    cat("========================================================\n")
+    cat("           CELL TYPE FILTERING SUMMARY LOG             \n")
+    cat("========================================================\n")
+
+    cat(
+      "Annotation column: ",
+      anno,
+      "\n",
+      sep = ""
+    )
+
+    cat(
+      "Filtered out cell types: ",
+      paste(valid_cells_to_remove, collapse = ", "),
+      "\n\n",
+      sep = ""
+    )
+
+
+    # ------------------------------------------------------------------------
+    # 9. Print remaining cell types and their cell counts
+    # ------------------------------------------------------------------------
+    cat(
+      "Remaining cells per cell type in column '",
+      anno,
+      "':\n",
+      sep = ""
+    )
+
+    remaining_counts <- table(
+      Seurat_object@meta.data[[anno]]
+    )
+
+    print(remaining_counts)
+
+
+    # ------------------------------------------------------------------------
+    # 10. Print total number of remaining cells
+    # ------------------------------------------------------------------------
+    cat(
+      "\nTotal cells remaining in dataset: ",
+      ncol(Seurat_object),
+      "\n",
+      sep = ""
+    )
+
+    cat("========================================================\n")
+    cat("\n")
+
+
+    # Optional confirmation message
+    message("Cell type filtering completed successfully.")
+    message(
+      "Removed ",
+      length(colnames(Seurat_object)) -
+        length(keep_cells),
+      " cells."
+    )
+
+
+  } else {
+
+    # ------------------------------------------------------------------------
+    # No valid cell types were found
+    # ------------------------------------------------------------------------
+    warning(
+      "None of the specified --cell_to_filter cell types were found. ",
+      "Continuing without filtering."
+    )
+
+  }
+
+} else {
+
+  # --------------------------------------------------------------------------
+  # No filtering requested
+  # --------------------------------------------------------------------------
+  message(
+    "No cell type filtering requested. ",
+    "Continuing with all cells."
+  )
+}
+
+# ==============================================================================
+# END OF CELL TYPE VALIDATION, FILTERING & LOGGING
+# ==============================================================================
 
 # Normalize and process Seurat object
 counts <- Seurat_object@assays$RNA@counts

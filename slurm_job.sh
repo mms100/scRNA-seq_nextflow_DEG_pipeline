@@ -40,4 +40,3 @@ module load R/4.4.1
 #    --batch_colname "RNA_snn_res.1"   \
 #    --cond_colname "groups" \
 #    --species "human"
-
